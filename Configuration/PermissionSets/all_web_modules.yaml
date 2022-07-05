@@ -1,0 +1,4 @@
+label: Enable all available modules in "web"
+modules:
+  web: "*"
+  user: '*'

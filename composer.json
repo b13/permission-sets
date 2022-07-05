@@ -1,0 +1,20 @@
+{
+	"name": "b13/permission-sets",
+	"type": "typo3-cms-extension",
+	"description": "Allows for deployable and re-usable permission sets for backend users",
+	"keywords": ["typo3", "permissions", "acl", "deployment"],
+	"license": "GPL-2.0-or-later",
+	"require": {
+		"typo3/cms-core": "^11.5 || ^12.0"
+	},
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "permission_sets"
+		}
+	},
+	"autoload": {
+		"psr-4": {
+			"B13\\PermissionSets\\": "Classes/"
+		}
+	}
+}

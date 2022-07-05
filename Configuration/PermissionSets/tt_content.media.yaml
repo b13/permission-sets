@@ -1,0 +1,17 @@
+label: Allow editing of text/media content elements
+resources:
+  pages:
+    permissions: ['read', 'write']
+    fields: '*'
+  tt_content:
+    permissions: ['read', 'write']
+    fields:
+      - assets
+      - bodytext
+    types: ['text', 'textpic', 'textmedia']
+
+settings:
+  options:
+    createFoldersInEB: true
+  TCEMAIN:
+    clearCache: all

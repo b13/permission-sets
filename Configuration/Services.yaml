@@ -1,0 +1,23 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+
+  B13\PermissionSets\:
+    resource: '../Classes/*'
+
+  B13\PermissionSets\AttachPermissionsToGroups:
+    tags:
+      - name: event.listener
+        identifier: 'b13/permission-sets'
+
+  B13\PermissionSets\PermissionSetRegistry:
+    shared: true
+    public: true
+
+  B13\PermissionSets\Discovery\PermissionSetLocator:
+    public: true
+
+  B13\PermissionSets\AvailablePermissionSets:
+    public: true
