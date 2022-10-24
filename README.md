@@ -119,7 +119,6 @@ settings:
 ## ToDo
 
 * Extensive tests
-* Add ext_emconf.php
 * Add default permission sets as examples
 * Enhance documentation
 
