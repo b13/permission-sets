@@ -159,12 +159,15 @@ final class AttachPermissionsToGroups
                 // Fetch all submodules of a module
                 if ((new Typo3Version())->getMajorVersion() > 11) {
                     $subModuleList = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->getModule($moduleName)->getSubmodules();
+                    foreach ($subModuleList as $subModuleName) {
+                        $finalModules[] = $subModuleName->getIdentifier();
+                    }
                 } else {
                     $subModuleList = $GLOBALS['TBE_MODULES'][$moduleName] ?? '';
                     $subModuleList = explode(',', $subModuleList);
-                }
-                foreach ($subModuleList as $subModuleName) {
-                    $finalModules[] = $subModuleName->getIdentifier();
+                    foreach ($subModuleList as $subModuleName) {
+                        $finalModules[] = $moduleName . '_' . $subModuleName;
+                    }
                 }
             } else {
                 $finalModules = array_merge($finalModules, $allowedModule);
