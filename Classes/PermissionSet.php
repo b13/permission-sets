@@ -88,4 +88,9 @@ class PermissionSet
     {
         return $this->instructions['settings'] ?? null;
     }
+
+    public function getAllowedWidgets(): ?array
+    {
+        return $this->instructions['widgets'] ?? null;
+    }
 }

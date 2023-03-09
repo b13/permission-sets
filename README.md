@@ -68,6 +68,16 @@ languages: "*"
 languages: ["de_DE", "en_UK"]
 ```
 
+### Dashboard Widgets
+
+```
+widgets: ['*']
+
+widgets:
+    - 'sysLogErrors'
+    - 't3news'
+```
+
 ### File Permissions
 
 ```
