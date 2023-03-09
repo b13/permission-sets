@@ -12,14 +12,13 @@ declare(strict_types=1);
 
 namespace B13\PermissionSets;
 
-use TYPO3\CMS\Backend\Module\ModuleProvider;
 use TYPO3\CMS\Core\Authentication\Event\AfterGroupsResolvedEvent;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
-use TYPO3\CMS\Dashboard\WidgetRegistry;
 
 /**
  * Event listener to enrich a be_group with permissions
@@ -60,12 +59,6 @@ final class AttachPermissionsToGroups
         if ($permissionSet->getAllowedModules()) {
             $additionalModules = $permissionSet->getAllowedModules();
             $group['groupMods'] .= ',' . implode(',', $this->expandModuleInstruction($additionalModules));
-        }
-
-        // Attach widgets
-        if ($permissionSet->getAllowedWidgets()) {
-            $additionalWidgets = $permissionSet->getAllowedWidgets();
-            $group['availableWidgets'] .= ',' . implode(',', $this->expandWidgetInstruction($additionalWidgets));
         }
 
         // Attach sites / pages
@@ -133,9 +126,15 @@ final class AttachPermissionsToGroups
                 $allowedContentTypes = $contentTypeLimitation['types'];
             }
             foreach ($allowedContentTypes as $allowedContentType) {
-                // needs to be like tt_content:CType:db_content_keyvisual
-                // @todo: add support for list_type
-                $finishedData[] = 'tt_content:CType:' . $allowedContentType;
+                if ((new Typo3Version())->getMajorVersion() > 11) {
+                    // needs to be like tt_content:CType:db_content_keyvisual
+                    // @todo: add support for list_type
+                    $finishedData[] = 'tt_content:CType:' . $allowedContentType;
+                } else {
+                    // needs to be like tt_content:CType:db_content_keyvisual:ALLOW
+                    // @todo: add support for list_type
+                    $finishedData[] = 'tt_content:CType:' . $allowedContentType . ':ALLOW';
+                }
             }
             $group['explicit_allowdeny'] .= ',' . implode(',', $finishedData);
         }
@@ -158,7 +157,12 @@ final class AttachPermissionsToGroups
             $finalModules[] = $moduleName;
             if ($allowedModule === '*' || $allowedModule === ['*']) {
                 // Fetch all submodules of a module
-                $subModuleList = GeneralUtility::makeInstance(ModuleProvider::class)->getModule($moduleName)->getSubmodules();
+                if ((new Typo3Version())->getMajorVersion() > 11) {
+                    $subModuleList = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->getModule($moduleName)->getSubmodules();
+                } else {
+                    $subModuleList = $GLOBALS['TBE_MODULES'][$moduleName] ?? '';
+                    $subModuleList = explode(',', $subModuleList);
+                }
                 foreach ($subModuleList as $subModuleName) {
                     $finalModules[] = $subModuleName->getIdentifier();
                 }
@@ -167,21 +171,5 @@ final class AttachPermissionsToGroups
             }
         }
         return $finalModules;
-    }
-
-    private function expandWidgetInstruction(array $allowedDashboardWidgets): array
-    {
-        $finalDashboardWidgets = [];
-        foreach ($allowedDashboardWidgets as $allowedDashboardWidget) {
-            if ($allowedDashboardWidget === '*' || $allowedDashboardWidget === ['*']) {
-                $dashboardWidgets = GeneralUtility::makeInstance(WidgetRegistry::class)->getAllWidgets();
-                foreach ($dashboardWidgets as $dashboardWidget) {
-                    $finalDashboardWidgets[] = $dashboardWidget->getIdentifier();
-                }
-            } else {
-                $finalDashboardWidgets = array_merge($finalDashboardWidgets, $allowedDashboardWidget);
-            }
-        }
-        return $finalDashboardWidgets;
     }
 }

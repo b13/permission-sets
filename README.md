@@ -116,16 +116,6 @@ settings:
         clearCache: all
 ```
 
-### Dashboard Widgets
-
-```
-widgets: ['*']
-
-widgets:
-    - 'sysLogErrors'
-    - 't3news'
-```
-
 ## ToDo
 
 * Extensive tests
