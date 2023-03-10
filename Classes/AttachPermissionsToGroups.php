@@ -185,17 +185,15 @@ final class AttachPermissionsToGroups
 
     private function expandWidgetInstruction(array $allowedDashboardWidgets): array
     {
-        $finalDashboardWidgets = [];
-        foreach ($allowedDashboardWidgets as $allowedDashboardWidget) {
-            if ($allowedDashboardWidget === '*' || $allowedDashboardWidget === ['*']) {
-                $dashboardWidgets = GeneralUtility::makeInstance(WidgetRegistry::class)->getAllWidgets();
-                foreach ($dashboardWidgets as $dashboardWidget) {
-                    $finalDashboardWidgets[] = $dashboardWidget->getIdentifier();
-                }
-            } else {
-                $finalDashboardWidgets = array_merge($finalDashboardWidgets, $allowedDashboardWidget);
+        if ($allowedDashboardWidgets === '*' || $allowedDashboardWidgets === ['*']) {
+            $finalDashboardWidgets = [];
+            $dashboardWidgets = GeneralUtility::makeInstance(WidgetRegistry::class)->getAllWidgets();
+            foreach ($dashboardWidgets as $dashboardWidget) {
+                $finalDashboardWidgets[] = $dashboardWidget->getIdentifier();
             }
+            return $finalDashboardWidgets;
         }
-        return $finalDashboardWidgets;
+
+        return $allowedDashboardWidgets;
     }
 }
