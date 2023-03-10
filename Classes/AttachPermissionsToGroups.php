@@ -18,6 +18,7 @@ use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 use TYPO3\CMS\Core\Utility\MathUtility;
+use TYPO3\CMS\Dashboard\WidgetRegistry;
 
 /**
  * Event listener to enrich a be_group with permissions
@@ -59,6 +60,13 @@ final class AttachPermissionsToGroups
             $additionalModules = $permissionSet->getAllowedModules();
             $group['groupMods'] .= ',' . implode(',', $this->expandModuleInstruction($additionalModules));
         }
+
+        // Attach widgets
+        if ($permissionSet->getAllowedWidgets()) {
+            $additionalWidgets = $permissionSet->getAllowedWidgets();
+            $group['availableWidgets'] .= ',' . implode(',', $this->expandWidgetInstruction($additionalWidgets));
+        }
+
         // Attach sites / pages
         if ($permissionSet->getAllowedSitesAndPages()) {
             $sitesAndPages = $permissionSet->getAllowedSitesAndPages();
@@ -159,5 +167,21 @@ final class AttachPermissionsToGroups
             }
         }
         return $finalModules;
+    }
+
+    private function expandWidgetInstruction(array $allowedDashboardWidgets): array
+    {
+        $finalDashboardWidgets = [];
+        foreach ($allowedDashboardWidgets as $allowedDashboardWidget) {
+            if ($allowedDashboardWidget === '*' || $allowedDashboardWidget === ['*']) {
+                $dashboardWidgets = GeneralUtility::makeInstance(WidgetRegistry::class)->getAllWidgets();
+                foreach ($dashboardWidgets as $dashboardWidget) {
+                    $finalDashboardWidgets[] = $dashboardWidget->getIdentifier();
+                }
+            } else {
+                $finalDashboardWidgets = array_merge($finalDashboardWidgets, $allowedDashboardWidget);
+            }
+        }
+        return $finalDashboardWidgets;
     }
 }
