@@ -53,9 +53,9 @@ resources:
 ```
 
 Special options:
-  * `_languageFields`
-  * `_types`
-  * `_starttime`
+* `_languageFields`
+* `_types`
+* `_starttime`
 
 
 ### Languages

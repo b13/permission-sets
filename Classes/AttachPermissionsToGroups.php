@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace B13\PermissionSets;
 
 use TYPO3\CMS\Core\Authentication\Event\AfterGroupsResolvedEvent;
+use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -132,9 +133,15 @@ final class AttachPermissionsToGroups
                 $allowedContentTypes = $contentTypeLimitation['types'];
             }
             foreach ($allowedContentTypes as $allowedContentType) {
-                // needs to be like tt_content:CType:db_content_keyvisual:ALLOW
-                // @todo: add support for list_type
-                $finishedData[] = 'tt_content:CType:' . $allowedContentType . ':ALLOW';
+                if ((new Typo3Version())->getMajorVersion() > 11) {
+                    // needs to be like tt_content:CType:db_content_keyvisual
+                    // @todo: add support for list_type
+                    $finishedData[] = 'tt_content:CType:' . $allowedContentType;
+                } else {
+                    // needs to be like tt_content:CType:db_content_keyvisual:ALLOW
+                    // @todo: add support for list_type
+                    $finishedData[] = 'tt_content:CType:' . $allowedContentType . ':ALLOW';
+                }
             }
             $group['explicit_allowdeny'] .= ',' . implode(',', $finishedData);
         }
@@ -157,10 +164,17 @@ final class AttachPermissionsToGroups
             $finalModules[] = $moduleName;
             if ($allowedModule === '*' || $allowedModule === ['*']) {
                 // Fetch all submodules of a module
-                $subModuleList = $GLOBALS['TBE_MODULES'][$moduleName] ?? '';
-                $subModuleList = explode(',', $subModuleList);
-                foreach ($subModuleList as $subModuleName) {
-                    $finalModules[] = $moduleName . '_' . $subModuleName;
+                if ((new Typo3Version())->getMajorVersion() > 11) {
+                    $subModuleList = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->getModule($moduleName)->getSubmodules();
+                    foreach ($subModuleList as $subModuleName) {
+                        $finalModules[] = $subModuleName->getIdentifier();
+                    }
+                } else {
+                    $subModuleList = $GLOBALS['TBE_MODULES'][$moduleName] ?? '';
+                    $subModuleList = explode(',', $subModuleList);
+                    foreach ($subModuleList as $subModuleName) {
+                        $finalModules[] = $moduleName . '_' . $subModuleName;
+                    }
                 }
             } else {
                 $finalModules = array_merge($finalModules, $allowedModule);
