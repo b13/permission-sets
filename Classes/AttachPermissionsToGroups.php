@@ -110,7 +110,7 @@ final class AttachPermissionsToGroups
                 continue;
             }
             if ($configurationForResource['fields'] === '*' || $configurationForResource['fields'] === ['*']) {
-                foreach ($GLOBALS['TCA'][$tableName]['columns'] as $fieldName => $fieldConfiguration) {
+                foreach ($GLOBALS['TCA'][$tableName]['columns'] ?? [] as $fieldName => $fieldConfiguration) {
                     if ($fieldConfiguration['exclude'] ?? false) {
                         $fieldNames[] = $tableName . ':' . $fieldName;
                     }
