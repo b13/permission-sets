@@ -78,6 +78,16 @@ widgets:
     - 't3news'
 ```
 
+### MFA Providers
+
+```
+mfa_providers: ['*']
+
+mfa_providers:
+    - 'totp'
+    - 'recovery-codes'
+```
+
 ### File Permissions
 
 ```

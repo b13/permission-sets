@@ -93,4 +93,9 @@ class PermissionSet
     {
         return $this->instructions['widgets'] ?? null;
     }
+
+    public function getAllowedMfaProviders(): ?array
+    {
+        return $this->instructions['mfa_providers'] ?? null;
+    }
 }
