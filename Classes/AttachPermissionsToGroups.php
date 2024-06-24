@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace B13\PermissionSets;
 
 use TYPO3\CMS\Core\Authentication\Event\AfterGroupsResolvedEvent;
+use TYPO3\CMS\Core\Authentication\Mfa\MfaProviderRegistry;
 use TYPO3\CMS\Core\Information\Typo3Version;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
@@ -66,6 +67,13 @@ final class AttachPermissionsToGroups
         if ($permissionSet->getAllowedWidgets()) {
             $additionalWidgets = $permissionSet->getAllowedWidgets();
             $group['availableWidgets'] .= ',' . implode(',', $this->expandWidgetInstruction($additionalWidgets));
+        }
+
+        // Attach MFA providers
+        $mfaProviders = $permissionSet->getAllowedMfaProviders();
+        if ($mfaProviders) {
+            $additionalMfaProviders = $mfaProviders;
+            $group['mfa_providers'] .= ',' . implode(',', $this->expandMfaProviderInstruction($additionalMfaProviders));
         }
 
         // Attach sites / pages
@@ -195,5 +203,19 @@ final class AttachPermissionsToGroups
         }
 
         return $allowedDashboardWidgets;
+    }
+
+    private function expandMfaProviderInstruction(array $allowedMfaProviders): array
+    {
+        if ($allowedMfaProviders === ['*']) {
+            $finalMfaProviders = [];
+            $mfaProviders = GeneralUtility::makeInstance(MfaProviderRegistry::class)->getProviders();
+            foreach ($mfaProviders as $mfaProvider) {
+                $finalMfaProviders[] = $mfaProvider->getIdentifier();
+            }
+            return $finalMfaProviders;
+        }
+
+        return $allowedMfaProviders;
     }
 }
