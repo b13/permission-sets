@@ -24,6 +24,12 @@ You can install this extension by using composer:
 * `config/permission-sets/*.yaml`
 * `EXT:my-extension/Configuration/PermissionSets/*.yaml`
 
+## Permission sets in backend usergroups
+
+Available permission sets are selectable in the _Permission Sets_ field when editing backend usergroups.
+
+All configuration from the selected permission sets is loaded and appended to the related backend usergroup fields.
+
 ## Available options in a Permission Set
 
 ### Module Access
