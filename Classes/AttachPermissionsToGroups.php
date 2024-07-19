@@ -169,7 +169,6 @@ final class AttachPermissionsToGroups
     {
         $finalModules = [];
         foreach ($allowedModules as $moduleName => $allowedModule) {
-            $finalModules[] = $moduleName;
             if ($allowedModule === '*' || $allowedModule === ['*']) {
                 // Fetch all submodules of a module
                 if ((new Typo3Version())->getMajorVersion() > 11) {
@@ -184,8 +183,17 @@ final class AttachPermissionsToGroups
                         $finalModules[] = $moduleName . '_' . $subModuleName;
                     }
                 }
-            } else {
-                $finalModules = array_merge($finalModules, $allowedModule);
+            } else if ((bool)$allowedModule === true) {
+                if ((new Typo3Version())->getMajorVersion() > 11) {
+                    if (GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->isModuleRegistered($moduleName)) {
+                        $finalModules[] = $moduleName;
+                    }
+                } else {
+                    [$module, $subModule] = GeneralUtility::trimExplode('_', $moduleName, true);
+                    if (array_key_exists($module, $GLOBALS['TBE_MODULES']) && str_contains($GLOBALS['TBE_MODULES'][$module], $subModule)) {
+                        $finalModules[] = $moduleName;
+                    }
+                }
             }
         }
         return $finalModules;
