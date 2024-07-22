@@ -49,6 +49,17 @@ final class AttachPermissionsToGroups
             }
             $finalGroups[] = $group;
         }
+        $user = $event->getUserData();
+        if (!empty($user['permissions_sets'])) {
+            $permissionSetIdentifiers = explode(',', $user['permission_sets']);
+            $group = [];
+            foreach ($permissionSetIdentifiers as $permissionSetIdentifier) {
+                if ($this->registry->has($permissionSetIdentifier)) {
+                    $group = $this->expandGroupPermissionsWithPermissionSet($group, $this->registry->get($permissionSetIdentifier));
+                }
+            }
+            $finalGroups[] = $group;
+        }
         $event->setGroups($finalGroups);
     }
 
