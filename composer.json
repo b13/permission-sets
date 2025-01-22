@@ -5,16 +5,46 @@
 	"keywords": ["typo3", "permissions", "acl", "deployment"],
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"typo3/cms-core": "^11.5 || ^12.0"
+		"typo3/cms-core": "^12.4 || ^13.4"
 	},
 	"extra": {
 		"typo3/cms": {
-			"extension-key": "permission_sets"
+			"extension-key": "permission_sets",
+			"cms-package-dir": "{$vendor-dir}/typo3/cms",
+			"app-dir": ".Build",
+			"web-dir": ".Build/Web"
 		}
 	},
 	"autoload": {
 		"psr-4": {
 			"B13\\PermissionSets\\": "Classes/"
 		}
-	}
+	},
+	"require-dev": {
+		"typo3/cms-dashboard": "^12.4 || ^13.4",
+		"saschaegerer/phpstan-typo3": "^1.8",
+		"typo3/coding-standards": "^0.5.5",
+		"typo3/testing-framework": "^8.0",
+		"b13/permission-sets-examples": "1.0.0"
+	},
+	"config": {
+		"vendor-dir": ".Build/vendor",
+		"bin-dir": ".Build/bin",
+		"allow-plugins": {
+			"typo3/class-alias-loader": true,
+			"typo3/cms-composer-installers": true
+		},
+		"sort-packages": true
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"B13\\PermissionSets\\Tests\\": "Tests/"
+		}
+	},
+	"repositories": [
+		{
+			"type": "path",
+			"url": "Build/Packages/*"
+		}
+	]
 }

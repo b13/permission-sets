@@ -1,0 +1,2 @@
+label: Allow all MFA Providers
+mfa_providers: ['*']

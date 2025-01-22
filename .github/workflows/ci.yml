@@ -1,0 +1,57 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  testsuite:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        TYPO3: ['12', '13']
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set up PHP Version
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+          tools: composer:v2
+
+      - name: Start MySQL
+        run: sudo /etc/init.d/mysql start
+
+      - name: Validate composer.json and composer.lock
+        run: composer validate
+
+      - name: Cache dependencies
+        uses: actions/cache@v1
+        with:
+          path: ~/.composer/cache
+          key: dependencies-composer-${{ hashFiles('composer.json') }}
+
+      - name: Install composer dependencies TYPO3 13
+        if: matrix.TYPO3 == '13'
+        run: |
+          composer install --no-progress --no-interaction
+
+      - name: Install composer dependencies TYPO3 12
+        if: matrix.TYPO3 == '12'
+        run: |
+          composer require typo3/cms-core:^12.4 --no-progress --no-interaction --dev -W
+
+      - name: Phpstan
+        run: .Build/bin/phpstan analyze -c Build/phpstan.neon
+
+      - name: Phpcsfix
+        run: .Build/bin/php-cs-fixer fix --config=Build/php-cs-fixer.php --dry-run --stop-on-violation --using-cache=no
+
+      - name: Functional Tests
+        run: |
+          export typo3DatabaseName="typo3";
+          export typo3DatabaseHost="127.0.0.1";
+          export typo3DatabaseUsername="root";
+          export typo3DatabasePassword="root";
+          .Build/bin/phpunit -c Build/phpunit/FunctionalTests.xml Tests/Functional

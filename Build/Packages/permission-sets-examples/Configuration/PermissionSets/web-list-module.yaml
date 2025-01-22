@@ -1,0 +1,3 @@
+label: Allow web_info modules
+modules:
+  web_list: true

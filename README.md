@@ -67,11 +67,9 @@ Special options:
 ### Languages
 
 ```
-# Allow any language
-languages: "*"
 
 # Allow any locale (used from site configuration)
-languages: ["de_DE", "en_UK"]
+languages: ["de-DE", "en-UK"]
 ```
 
 ### Dashboard Widgets

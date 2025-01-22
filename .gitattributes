@@ -1,2 +1,5 @@
 /.gitattributes export-ignore
 /Tests/ export-ignore
+/Build/ export-ignore
+/.gitignore export-ignore
+/.github export-ignore

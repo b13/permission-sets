@@ -1,0 +1,6 @@
+label: Allow writing of page title
+resources:
+  pages:
+    permissions: ['write']
+    fields:
+      - title

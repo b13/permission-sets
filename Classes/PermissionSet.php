@@ -58,6 +58,9 @@ class PermissionSet
         }
         $tables = [];
         foreach ($this->instructions['resources'] as $tableName => $details) {
+            if (!isset($details['permissions'])) {
+                continue;
+            }
             if ($details['permissions'] === '*' || in_array($permission, $details['permissions'], true)) {
                 $tables[] = $tableName;
             }
@@ -97,5 +100,10 @@ class PermissionSet
     public function getAllowedMfaProviders(): ?array
     {
         return $this->instructions['mfa_providers'] ?? null;
+    }
+
+    public function getAllowedLanguages(): ?array
+    {
+        return $this->instructions['languages'] ?? null;
     }
 }

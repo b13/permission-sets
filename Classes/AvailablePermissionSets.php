@@ -23,14 +23,13 @@ class AvailablePermissionSets
 
     public function __construct(
         PermissionSetRegistry $registry
-    )
-    {
+    ) {
         $this->registry = $registry;
     }
     public function backendGroupSelector(array &$params, TcaSelectItems $parentObject)
     {
         foreach ($this->registry->all() as $identifier => $permissionSet) {
-            $params['items'][] = [$permissionSet->label, $identifier];
+            $params['items'][] = ['label' => $permissionSet->label, 'value' => $identifier];
         }
     }
 }
