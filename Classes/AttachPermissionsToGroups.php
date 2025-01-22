@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace B13\PermissionSets;
 
+use TYPO3\CMS\Backend\Module\ModuleProvider;
 use TYPO3\CMS\Core\Authentication\Event\AfterGroupsResolvedEvent;
 use TYPO3\CMS\Core\Authentication\Mfa\MfaProviderRegistry;
 use TYPO3\CMS\Core\Exception\SiteNotFoundException;
+use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -27,12 +29,14 @@ use TYPO3\CMS\Dashboard\WidgetRegistry;
  */
 final class AttachPermissionsToGroups
 {
-    private PermissionSetRegistry $registry;
-
-    public function __construct(PermissionSetRegistry $registry)
-    {
-        $this->registry = $registry;
-    }
+    public function __construct(
+        private PermissionSetRegistry $registry,
+        private SiteFinder $siteFinder,
+        private ModuleProvider $moduleProvider,
+        private TypoScriptService $typoScriptService,
+        private MfaProviderRegistry $mfaProviderRegistry,
+        private PackageManager $packageManager
+    ) {}
 
     public function __invoke(AfterGroupsResolvedEvent $event)
     {
@@ -85,7 +89,7 @@ final class AttachPermissionsToGroups
                     $finalSitesAndPages[] = $siteOrPage;
                 } else {
                     try {
-                        $site =  GeneralUtility::makeInstance(SiteFinder::class)->getSiteByIdentifier($siteOrPage);
+                        $site =  $this->siteFinder->getSiteByIdentifier($siteOrPage);
                         $finalSitesAndPages[] = $site->getRootPageId();
                     } catch (SiteNotFoundException $e) {
                     }
@@ -158,7 +162,7 @@ final class AttachPermissionsToGroups
         // @todo: add userTsConfig
         $settings = $permissionSet->getSettings();
         if ($settings !== null) {
-            $settings = (new TypoScriptService())->convertPlainArrayToTypoScriptArray($settings);
+            $settings = $this->typoScriptService->convertPlainArrayToTypoScriptArray($settings);
             $settings = ArrayUtility::flatten($settings, '', true);
             foreach ($settings as $key => $value) {
                 $group['TSconfig'] .= "\n\r" . $key . ' = ' . $value;
@@ -170,8 +174,7 @@ final class AttachPermissionsToGroups
     private function expandLanguageInstruction(array $languages): array
     {
         $languageIds = [];
-        $siteFinder = GeneralUtility::makeInstance(SiteFinder::class);
-        $sites = $siteFinder->getAllSites();
+        $sites = $this->siteFinder->getAllSites();
         foreach ($sites as $site) {
             $siteLanguages = $site->getLanguages();
             foreach ($siteLanguages as $siteLanguage) {
@@ -189,12 +192,12 @@ final class AttachPermissionsToGroups
         foreach ($allowedModules as $moduleName => $allowedModule) {
             if ($allowedModule === '*' || $allowedModule === ['*']) {
                 // Fetch all submodules of a module
-                $subModuleList = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->getModule($moduleName)->getSubmodules();
+                $subModuleList = $this->moduleProvider->getModule($moduleName)->getSubmodules();
                 foreach ($subModuleList as $subModuleName) {
                     $finalModules[] = $subModuleName->getIdentifier();
                 }
             } elseif ((bool)$allowedModule === true) {
-                if (GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->isModuleRegistered($moduleName)) {
+                if ($this->moduleProvider->isModuleRegistered($moduleName)) {
                     $finalModules[] = $moduleName;
                 }
             }
@@ -204,8 +207,7 @@ final class AttachPermissionsToGroups
 
     private function expandWidgetInstruction(array $allowedDashboardWidgets): array
     {
-        $packageManager = \TYPO3\CMS\Core\Utility\GeneralUtility::makeInstance(\TYPO3\CMS\Core\Package\PackageManager::class);
-        if ($packageManager->isPackageActive('dashboard') === false) {
+        if ($this->packageManager->isPackageActive('dashboard') === false) {
             return [];
         }
         if ($allowedDashboardWidgets === ['*']) {
@@ -224,7 +226,7 @@ final class AttachPermissionsToGroups
     {
         if ($allowedMfaProviders === ['*']) {
             $finalMfaProviders = [];
-            $mfaProviders = GeneralUtility::makeInstance(MfaProviderRegistry::class)->getProviders();
+            $mfaProviders = $this->mfaProviderRegistry->getProviders();
             foreach ($mfaProviders as $mfaProvider) {
                 $finalMfaProviders[] = $mfaProvider->getIdentifier();
             }

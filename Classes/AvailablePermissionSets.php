@@ -19,13 +19,8 @@ use TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectItems;
  */
 class AvailablePermissionSets
 {
-    protected PermissionSetRegistry $registry;
+    public function __construct(protected PermissionSetRegistry $registry) {}
 
-    public function __construct(
-        PermissionSetRegistry $registry
-    ) {
-        $this->registry = $registry;
-    }
     public function backendGroupSelector(array &$params, TcaSelectItems $parentObject)
     {
         foreach ($this->registry->all() as $identifier => $permissionSet) {
