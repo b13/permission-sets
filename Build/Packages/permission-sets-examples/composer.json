@@ -1,0 +1,12 @@
+{
+	"name": "b13/permission-sets-examples",
+	"type": "typo3-cms-extension",
+	"description": "Examples for testing",
+	"license": "GPL-2.0-or-later",
+	"version": "1.0.0",
+	"extra": {
+		"typo3/cms": {
+			"extension-key": "permission_sets_examples"
+		}
+	}
+}

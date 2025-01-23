@@ -55,6 +55,5 @@ final class PermissionSetLocator
                 $registry->add($file->getBasename('.yaml'), $permissionSet);
             }
         }
-
     }
 }

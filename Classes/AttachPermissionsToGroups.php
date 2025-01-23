@@ -12,9 +12,11 @@ declare(strict_types=1);
 
 namespace B13\PermissionSets;
 
+use TYPO3\CMS\Backend\Module\ModuleProvider;
 use TYPO3\CMS\Core\Authentication\Event\AfterGroupsResolvedEvent;
 use TYPO3\CMS\Core\Authentication\Mfa\MfaProviderRegistry;
-use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Exception\SiteNotFoundException;
+use TYPO3\CMS\Core\Package\PackageManager;
 use TYPO3\CMS\Core\Site\SiteFinder;
 use TYPO3\CMS\Core\TypoScript\TypoScriptService;
 use TYPO3\CMS\Core\Utility\ArrayUtility;
@@ -27,12 +29,14 @@ use TYPO3\CMS\Dashboard\WidgetRegistry;
  */
 final class AttachPermissionsToGroups
 {
-    private PermissionSetRegistry $registry;
-
-    public function __construct(PermissionSetRegistry $registry)
-    {
-        $this->registry = $registry;
-    }
+    public function __construct(
+        private PermissionSetRegistry $registry,
+        private SiteFinder $siteFinder,
+        private ModuleProvider $moduleProvider,
+        private TypoScriptService $typoScriptService,
+        private MfaProviderRegistry $mfaProviderRegistry,
+        private PackageManager $packageManager
+    ) {}
 
     public function __invoke(AfterGroupsResolvedEvent $event)
     {
@@ -84,7 +88,11 @@ final class AttachPermissionsToGroups
                 if (MathUtility::canBeInterpretedAsInteger($siteOrPage)) {
                     $finalSitesAndPages[] = $siteOrPage;
                 } else {
-                    $finalSitesAndPages[] = GeneralUtility::makeInstance(SiteFinder::class)->getSiteByIdentifier($siteOrPage)->getRootPageId();
+                    try {
+                        $site =  $this->siteFinder->getSiteByIdentifier($siteOrPage);
+                        $finalSitesAndPages[] = $site->getRootPageId();
+                    } catch (SiteNotFoundException $e) {
+                    }
                 }
             }
             $group['db_mountpoints'] .= ',' . implode(',', $finalSitesAndPages);
@@ -141,28 +149,41 @@ final class AttachPermissionsToGroups
                 $allowedContentTypes = $contentTypeLimitation['types'];
             }
             foreach ($allowedContentTypes as $allowedContentType) {
-                if ((new Typo3Version())->getMajorVersion() > 11) {
-                    // needs to be like tt_content:CType:db_content_keyvisual
-                    // @todo: add support for list_type
-                    $finishedData[] = 'tt_content:CType:' . $allowedContentType;
-                } else {
-                    // needs to be like tt_content:CType:db_content_keyvisual:ALLOW
-                    // @todo: add support for list_type
-                    $finishedData[] = 'tt_content:CType:' . $allowedContentType . ':ALLOW';
-                }
+                // needs to be like tt_content:CType:db_content_keyvisual
+                // @todo: add support for list_type
+                $finishedData[] = 'tt_content:CType:' . $allowedContentType;
             }
             $group['explicit_allowdeny'] .= ',' . implode(',', $finishedData);
         }
-
-        // @todo: $group['allowed_languages'] .= ',' . $languages;
+        $languages = $permissionSet->getAllowedLanguages();
+        if ($languages) {
+            $group['allowed_languages'] .= ',' . implode(',', $this->expandLanguageInstruction($languages));
+        }
         // @todo: add userTsConfig
         $settings = $permissionSet->getSettings();
         if ($settings !== null) {
-            $settings = (new TypoScriptService())->convertPlainArrayToTypoScriptArray($settings);
+            $settings = $this->typoScriptService->convertPlainArrayToTypoScriptArray($settings);
             $settings = ArrayUtility::flatten($settings, '', true);
-            $group['TSconfig'] .= "\n\r" . implode("\n\r", $settings);
+            foreach ($settings as $key => $value) {
+                $group['TSconfig'] .= "\n\r" . $key . ' = ' . $value;
+            }
         }
         return $group;
+    }
+
+    private function expandLanguageInstruction(array $languages): array
+    {
+        $languageIds = [];
+        $sites = $this->siteFinder->getAllSites();
+        foreach ($sites as $site) {
+            $siteLanguages = $site->getLanguages();
+            foreach ($siteLanguages as $siteLanguage) {
+                if (in_array((string)$siteLanguage->getLocale(), $languages, true)) {
+                    $languageIds[] = $siteLanguage->getLanguageId();
+                }
+            }
+        }
+        return $languageIds;
     }
 
     private function expandModuleInstruction(array $allowedModules): array
@@ -171,28 +192,13 @@ final class AttachPermissionsToGroups
         foreach ($allowedModules as $moduleName => $allowedModule) {
             if ($allowedModule === '*' || $allowedModule === ['*']) {
                 // Fetch all submodules of a module
-                if ((new Typo3Version())->getMajorVersion() > 11) {
-                    $subModuleList = GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->getModule($moduleName)->getSubmodules();
-                    foreach ($subModuleList as $subModuleName) {
-                        $finalModules[] = $subModuleName->getIdentifier();
-                    }
-                } else {
-                    $subModuleList = $GLOBALS['TBE_MODULES'][$moduleName] ?? '';
-                    $subModuleList = explode(',', $subModuleList);
-                    foreach ($subModuleList as $subModuleName) {
-                        $finalModules[] = $moduleName . '_' . $subModuleName;
-                    }
+                $subModuleList = $this->moduleProvider->getModule($moduleName)->getSubmodules();
+                foreach ($subModuleList as $subModuleName) {
+                    $finalModules[] = $subModuleName->getIdentifier();
                 }
-            } else if ((bool)$allowedModule === true) {
-                if ((new Typo3Version())->getMajorVersion() > 11) {
-                    if (GeneralUtility::makeInstance(\TYPO3\CMS\Backend\Module\ModuleProvider::class)->isModuleRegistered($moduleName)) {
-                        $finalModules[] = $moduleName;
-                    }
-                } else {
-                    [$module, $subModule] = GeneralUtility::trimExplode('_', $moduleName, true);
-                    if (array_key_exists($module, $GLOBALS['TBE_MODULES']) && str_contains($GLOBALS['TBE_MODULES'][$module], $subModule)) {
-                        $finalModules[] = $moduleName;
-                    }
+            } elseif ((bool)$allowedModule === true) {
+                if ($this->moduleProvider->isModuleRegistered($moduleName)) {
+                    $finalModules[] = $moduleName;
                 }
             }
         }
@@ -201,7 +207,10 @@ final class AttachPermissionsToGroups
 
     private function expandWidgetInstruction(array $allowedDashboardWidgets): array
     {
-        if ($allowedDashboardWidgets === '*' || $allowedDashboardWidgets === ['*']) {
+        if ($this->packageManager->isPackageActive('dashboard') === false) {
+            return [];
+        }
+        if ($allowedDashboardWidgets === ['*']) {
             $finalDashboardWidgets = [];
             $dashboardWidgets = GeneralUtility::makeInstance(WidgetRegistry::class)->getAllWidgets();
             foreach ($dashboardWidgets as $dashboardWidget) {
@@ -217,7 +226,7 @@ final class AttachPermissionsToGroups
     {
         if ($allowedMfaProviders === ['*']) {
             $finalMfaProviders = [];
-            $mfaProviders = GeneralUtility::makeInstance(MfaProviderRegistry::class)->getProviders();
+            $mfaProviders = $this->mfaProviderRegistry->getProviders();
             foreach ($mfaProviders as $mfaProvider) {
                 $finalMfaProviders[] = $mfaProvider->getIdentifier();
             }

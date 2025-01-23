@@ -1,0 +1,5 @@
+label: Allow doktype sysfilder
+resources:
+  pages:
+    types:
+      - 254

@@ -1,0 +1,23 @@
+base: '/'
+baseVariants: {  }
+errorHandling: {  }
+languages:
+  -
+    title: english
+    enabled: true
+    base: /
+    locale: en_US.UTF-8
+    flag: global
+    languageId: '0'
+    websiteTitle: ''
+  -
+    title: german
+    enabled: true
+    base: /de/
+    locale: de_DE.UTF-8
+    flag: de
+    languageId: '1'
+
+rootPageId: 1
+routes: {  }
+websiteTitle: 'Testing'

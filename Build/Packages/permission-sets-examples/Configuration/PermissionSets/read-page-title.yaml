@@ -1,0 +1,6 @@
+label: Allow reading of page title
+resources:
+  pages:
+    permissions: ['read']
+    fields:
+      - title
