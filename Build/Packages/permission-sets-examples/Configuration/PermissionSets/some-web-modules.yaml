@@ -1,0 +1,3 @@
+label: Allow web_page and web_list modules
+modules:
+  web: ['web_layout', 'web_list']
