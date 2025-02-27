@@ -196,6 +196,12 @@ final class AttachPermissionsToGroups
                 foreach ($subModuleList as $subModuleName) {
                     $finalModules[] = $subModuleName->getIdentifier();
                 }
+            } elseif (is_array($allowedModule)) {
+                foreach ($allowedModule as $subModuleName) {
+                    if ($this->moduleProvider->isModuleRegistered($subModuleName)) {
+                        $finalModules[] = $subModuleName;
+                    }
+                }
             } elseif ((bool)$allowedModule === true) {
                 if ($this->moduleProvider->isModuleRegistered($moduleName)) {
                     $finalModules[] = $moduleName;

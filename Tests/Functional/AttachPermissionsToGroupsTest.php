@@ -116,6 +116,19 @@ class AttachPermissionsToGroupsTest extends FunctionalTestCase
     }
 
     #[Test]
+    public function someWebModules(): void
+    {
+        $group = $this->emptyGroup;
+        $group['permission_sets'] = 'b13/permission-sets-examples/some-web-modules';
+        $event = new AfterGroupsResolvedEvent('be_groups', [$group], [1], []);
+        $attachPermissionsToGroups = GeneralUtility::makeInstance(AttachPermissionsToGroups::class);
+        $attachPermissionsToGroups($event);
+        $modGroup = $event->getGroups()[0];
+        self::assertStringContainsString('web_layout', $modGroup['groupMods']);
+        self::assertStringContainsString('web_list', $modGroup['groupMods']);
+    }
+
+    #[Test]
     public function webInfoModule(): void
     {
         $group = $this->emptyGroup;
