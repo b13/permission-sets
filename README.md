@@ -135,6 +135,14 @@ sites:
   - 13
 ```
 
+### Category Mounts
+
+```
+categories:
+  - category1
+  - category2
+```
+
 ### UserTsConfig
 
 UserTsConfig is merged automatically with the users' / user group

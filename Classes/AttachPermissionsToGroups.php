@@ -127,6 +127,29 @@ final class AttachPermissionsToGroups
                 }
         }
 
+        if ($permissionSet->getAllowedCategories()) {
+            $allowedCategories = $permissionSet->getAllowedCategories();
+            if ($allowedCategories) {
+                $queryBuilder = $this->connectionPool->getQueryBuilderForTable('sys_category');
+                $queryBuilder->getRestrictions()
+                    ->add(GeneralUtility::makeInstance(\TYPO3\CMS\Core\Database\Query\Restriction\DeletedRestriction::class))
+                    ->add(GeneralUtility::makeInstance(DeletedRestriction::class))
+                    ->add(GeneralUtility::makeInstance(HiddenRestriction::class));
+                $queryBuilder->select('uid')
+                    ->from('sys_category')
+                    ->where(
+                        $queryBuilder->expr()->in('title', $queryBuilder->createNamedParameter($allowedCategories, Connection::PARAM_STR_ARRAY))
+                    );
+                $categoryRecords = $queryBuilder->executeQuery()->fetchAllAssociative();
+                if ($categoryRecords) {
+                    $allowedCategoryKeys = array_column($categoryRecords, 'uid');
+                    $group['category_perms'] .= ',' . implode(',', $allowedCategoryKeys);
+                }
+            }
+        }
+        
+
+
         if ($permissionSet->getAllowedFilePermissions()) {
             $group['file_permissions'] .= ',' . implode(',', $permissionSet->getAllowedFilePermissions());
         }
