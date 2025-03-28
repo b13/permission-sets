@@ -116,6 +116,14 @@ files:
   - recursiveDeleteFolder
 ```
 
+### Filemount Permissions
+
+```
+filemounts:
+  - 'data'
+  - 'images'
+```
+
 ### Sites
 
 ```
