@@ -80,6 +80,12 @@ final class AttachPermissionsToGroups
             $group['mfa_providers'] .= ',' . implode(',', $this->expandMfaProviderInstruction($additionalMfaProviders));
         }
 
+        // Attach custom options
+        $customOptions = $permissionSet->getCustomOptions();
+        if ($customOptions) {
+            $group['custom_options'] .= ',' . implode(',', $this->expandCustomOptionsInstruction($customOptions));
+        }
+
         // Attach sites / pages
         if ($permissionSet->getAllowedSitesAndPages()) {
             $sitesAndPages = $permissionSet->getAllowedSitesAndPages();
@@ -240,5 +246,17 @@ final class AttachPermissionsToGroups
         }
 
         return $allowedMfaProviders;
+    }
+
+    private function expandCustomOptionsInstruction(array $customOptions): array
+    {
+        $expandedCustomOptions = [];
+        foreach ($customOptions as $group => $options) {
+            foreach ($options as $option) {
+                $expandedCustomOptions[] = $group . ':' . $option;
+
+            }
+        }
+        return $expandedCustomOptions;
     }
 }
