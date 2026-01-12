@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace B13\PermissionSets;
 
 /**
- * Functionality to load all available permission sets for selection of be_groups.permissions.sets
+ * Functionality to load all available permission sets for selection of be_groups.permissions_sets
  */
 class AvailablePermissionSets
 {
@@ -22,7 +22,10 @@ class AvailablePermissionSets
     public function backendGroupSelector(array &$params): void
     {
         foreach ($this->registry->all() as $identifier => $permissionSet) {
-            $params['items'][] = ['label' => $permissionSet->label, 'value' => $identifier];
+            $params['items'][] = [
+                'label' => $permissionSet->label,
+                'value' => $identifier,
+            ];
         }
     }
 }
