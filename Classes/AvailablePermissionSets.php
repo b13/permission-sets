@@ -13,18 +13,24 @@ declare(strict_types=1);
 namespace B13\PermissionSets;
 
 use TYPO3\CMS\Backend\Form\FormDataProvider\TcaSelectItems;
+use TYPO3\CMS\Core\DataHandling\ItemProcessingService;
 
 /**
- * Functionality to load all available permission sets for selection of be_groups.permissions.sets
+ * Functionality to load all available permission sets for selection of be_groups.permissions_sets
  */
 class AvailablePermissionSets
 {
     public function __construct(protected PermissionSetRegistry $registry) {}
 
-    public function backendGroupSelector(array &$params, TcaSelectItems $parentObject)
-    {
+    public function backendGroupSelector(
+        array &$params,
+        TcaSelectItems|ItemProcessingService $parentObject
+    ): void {
         foreach ($this->registry->all() as $identifier => $permissionSet) {
-            $params['items'][] = ['label' => $permissionSet->label, 'value' => $identifier];
+            $params['items'][] = [
+                'label' => $permissionSet->label,
+                'value' => $identifier,
+            ];
         }
     }
 }
