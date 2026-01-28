@@ -165,9 +165,17 @@ final class AttachPermissionsToGroups
             $settings = $this->typoScriptService->convertPlainArrayToTypoScriptArray($settings);
             $settings = ArrayUtility::flatten($settings, '', true);
             foreach ($settings as $key => $value) {
+
+                if ($key === 'importFromFile') {
+                    $group['TSconfig'] .= "\n\r" . $this->buildTsImportStatement($value);
+
+                    continue;
+                }
+
                 $group['TSconfig'] .= "\n\r" . $key . ' = ' . $value;
             }
         }
+
         return $group;
     }
 
@@ -240,5 +248,10 @@ final class AttachPermissionsToGroups
         }
 
         return $allowedMfaProviders;
+    }
+
+    private function buildTsImportStatement(string $file): string
+    {
+        return '@import "' . $file . '"';
     }
 }
