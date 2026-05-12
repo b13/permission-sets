@@ -5,7 +5,7 @@
 	"keywords": ["typo3", "permissions", "acl", "deployment"],
 	"license": "GPL-2.0-or-later",
 	"require": {
-		"typo3/cms-core": "^12.4 || ^13.4"
+		"typo3/cms-core": "^12.4 || ^13.4 || ^14.3"
 	},
 	"extra": {
 		"typo3/cms": {
@@ -21,10 +21,10 @@
 		}
 	},
 	"require-dev": {
-		"typo3/cms-dashboard": "^12.4 || ^13.4",
-		"saschaegerer/phpstan-typo3": "^1.8",
+		"typo3/cms-dashboard": "^12.4 || ^13.4 || ^14.3",
+		"saschaegerer/phpstan-typo3": "^1.8 || ^2.0",
 		"typo3/coding-standards": "^0.8.0",
-		"typo3/testing-framework": "^8.0",
+		"typo3/testing-framework": "^8.0 || ^9.0",
 		"b13/permission-sets-examples": "1.0.0"
 	},
 	"config": {

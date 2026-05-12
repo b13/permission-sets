@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        TYPO3: ['12', '13']
+        TYPO3: ['12', '13', '14']
 
     steps:
       - name: Checkout
@@ -27,15 +27,20 @@ jobs:
         run: composer validate
 
       - name: Cache dependencies
-        uses: actions/cache@v1
+        uses: actions/cache@v4
         with:
           path: ~/.composer/cache
           key: dependencies-composer-${{ hashFiles('composer.json') }}
 
+      - name: Install composer dependencies TYPO3 14
+        if: matrix.TYPO3 == '14'
+        run: |
+          composer install --no-progress --no-interaction
+
       - name: Install composer dependencies TYPO3 13
         if: matrix.TYPO3 == '13'
         run: |
-          composer install --no-progress --no-interaction
+          composer require typo3/cms-core:^13.4 --no-progress --no-interaction --dev -W
 
       - name: Install composer dependencies TYPO3 12
         if: matrix.TYPO3 == '12'
