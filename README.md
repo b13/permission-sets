@@ -138,6 +138,7 @@ settings:
         createFoldersInEB: true
     TCEMAIN:
         clearCache: all
+    importFromFile: 'EXT:my_extension/Configuration/TSconfig/user.tsconfig'
 ```
 
 ## ToDo
