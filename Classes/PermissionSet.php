@@ -106,4 +106,9 @@ class PermissionSet
     {
         return $this->instructions['languages'] ?? null;
     }
+
+    public function getCustomOptions(): ?array
+    {
+        return $this->instructions['custom_options'] ?? null;
+    }
 }
