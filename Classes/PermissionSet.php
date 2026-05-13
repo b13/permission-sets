@@ -43,6 +43,22 @@ class PermissionSet
         return null;
     }
 
+    public function getAllowedFileMounts(): ?array
+    {
+        if (isset($this->instructions['filemounts'])) {
+            return $this->instructions['filemounts'];
+        }
+        return null;
+    }
+
+    public function getAllowedCategories(): ?array
+    {
+        if (isset($this->instructions['categories'])) {
+            return $this->instructions['categories'];
+        }
+        return null;
+    }
+
     public function getAllowedFilePermissions(): ?array
     {
         if (isset($this->instructions['files'])) {
