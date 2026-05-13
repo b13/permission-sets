@@ -1,0 +1,19 @@
+name: permission-sets
+type: php
+php_version: "8.4"
+database:
+  type: mariadb
+  version: "10.11"
+webserver_type: generic
+router_http_port: "80"
+router_https_port: "443"
+
+hooks:
+  post-start:
+    - exec-host: ddev mysql --database=mysql -e "GRANT ALL ON \`typo3_%\`.* TO 'db'@'%'; FLUSH PRIVILEGES;"
+
+web_environment:
+  - typo3DatabaseName=typo3
+  - typo3DatabaseHost=db
+  - typo3DatabaseUsername=db
+  - typo3DatabasePassword=db

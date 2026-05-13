@@ -1,4 +1,5 @@
 label: clear all cache
 settings:
-  TCEMAIN:
-    clearCache: all
+  options:
+    clearCache:
+      all: 1
