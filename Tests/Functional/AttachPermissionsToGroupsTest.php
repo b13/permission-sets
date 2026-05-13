@@ -262,6 +262,19 @@ class AttachPermissionsToGroupsTest extends FunctionalTestCase
         $attachPermissionsToGroups = GeneralUtility::makeInstance(AttachPermissionsToGroups::class);
         $attachPermissionsToGroups($event);
         $modGroup = $event->getGroups()[0];
-        self::assertStringContainsString('TCEMAIN.clearCache = all', $modGroup['TSconfig']);
+        self::assertStringContainsString('options.clearCache.all = 1', $modGroup['TSconfig']);
     }
+
+    #[Test]
+    public function tcemainClearCacheCmd(): void
+    {
+        $group = $this->emptyGroup;
+        $group['permission_sets'] = 'b13/permission-sets-examples/tcemain-clear-cache-cmd';
+        $event = new AfterGroupsResolvedEvent('be_groups', [$group], [1], []);
+        $attachPermissionsToGroups = GeneralUtility::makeInstance(AttachPermissionsToGroups::class);
+        $attachPermissionsToGroups($event);
+        $modGroup = $event->getGroups()[0];
+        self::assertStringContainsString('TCEMAIN.clearCacheCmd = all', $modGroup['TSconfig']);
+    }
+
 }

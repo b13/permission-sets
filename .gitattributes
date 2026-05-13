@@ -1,4 +1,5 @@
 /.gitattributes export-ignore
+/.ddev export-ignore
 /Tests/ export-ignore
 /Build/ export-ignore
 /.gitignore export-ignore

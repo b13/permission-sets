@@ -15,4 +15,3 @@ return \TYPO3\CodingStandards\CsFixerConfig::create()
         'declare_strict_types' => true,
     ])
     ->setUsingCache(false);
-

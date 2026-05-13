@@ -1,0 +1,4 @@
+label: TCEMAIN clear cache cmd
+settings:
+  TCEMAIN:
+    clearCacheCmd: all

@@ -1,0 +1,7 @@
+#!/bin/bash
+## Description: Run functional tests
+## Usage: test [phpunit-args]
+## Example: "ddev test", "ddev test --filter clearCacheOptions"
+
+cd /var/www/html
+.Build/bin/phpunit -c Build/phpunit/FunctionalTests.xml Tests/Functional "$@"
