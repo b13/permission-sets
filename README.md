@@ -140,6 +140,14 @@ settings:
         clearCache: all
 ```
 
+### Custom Options
+
+```
+custom_options:
+    deepltranslate:
+        - translateAllowed
+```
+
 ## ToDo
 
 * Extensive tests
