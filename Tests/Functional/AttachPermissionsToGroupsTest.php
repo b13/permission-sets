@@ -277,4 +277,15 @@ class AttachPermissionsToGroupsTest extends FunctionalTestCase
         self::assertStringContainsString('TCEMAIN.clearCacheCmd = all', $modGroup['TSconfig']);
     }
 
+    #[Test]
+    public function customOptions(): void
+    {
+        $group = $this->emptyGroup;
+        $group['permission_sets'] = 'b13/permission-sets-examples/custom-options';
+        $event = new AfterGroupsResolvedEvent('be_groups', [$group], [1], []);
+        $attachPermissionsToGroups = GeneralUtility::makeInstance(AttachPermissionsToGroups::class);
+        $attachPermissionsToGroups($event);
+        $modGroup = $event->getGroups()[0];
+        self::assertStringContainsString('deepltranslate:translateAllowed', $modGroup['custom_options']);
+    }
 }

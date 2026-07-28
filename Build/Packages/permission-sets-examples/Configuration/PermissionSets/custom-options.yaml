@@ -1,0 +1,4 @@
+label: 'DeepL Translate'
+custom_options:
+  deepltranslate:
+    - translateAllowed
