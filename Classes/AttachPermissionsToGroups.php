@@ -146,21 +146,38 @@ final class AttachPermissionsToGroups
         if (!empty($fieldNames)) {
             $group['non_exclude_fields'] .= ',' . implode(',', $fieldNames);
         }
-        $contentTypeLimitation = $permissionSet->getConfigurationForResource('tt_content');
-        if (isset($contentTypeLimitation['types'])) {
-            $finishedData = [];
-            if ($contentTypeLimitation['types'] === '*' || $contentTypeLimitation['types'] === ['*']) {
-                $allowedContentTypes = array_keys($GLOBALS['TCA']['tt_content']['types']);
+
+        $contentLimitation = $permissionSet->getConfigurationForResource('tt_content');
+        $allowedContentTypes = [];
+
+        if (isset($contentLimitation['types'])) {
+            if ($contentLimitation['types'] === '*' || $contentLimitation['types'] === ['*']) {
+                $contentTypes = array_keys($GLOBALS['TCA']['tt_content']['types']);
             } else {
-                $allowedContentTypes = $contentTypeLimitation['types'];
+                $contentTypes = $contentLimitation['types'];
             }
-            foreach ($allowedContentTypes as $allowedContentType) {
-                // needs to be like tt_content:CType:db_content_keyvisual
-                // @todo: add support for list_type
-                $finishedData[] = 'tt_content:CType:' . $allowedContentType;
+            foreach ($contentTypes as $contentType) {
+                // needs to be like tt_content:CType:foo_bar
+                $allowedContentTypes[] = 'tt_content:CType:' . $contentType;
             }
-            $group['explicit_allowdeny'] .= ',' . implode(',', $finishedData);
         }
+
+        if (isset($contentLimitation['plugins'])) {
+            if ($contentLimitation['plugins'] === '*' || $contentLimitation['plugins'] === ['*']) {
+                $pluginTypes = array_column($GLOBALS['TCA']['tt_content']['columns']['list_type']['config']['items'] ?? [], 'value');
+            } else {
+                $pluginTypes = $contentLimitation['plugins'];
+            }
+            foreach ($pluginTypes as $pluginType) {
+                // needs to be like tt_content:list_type:foo_bar
+                $allowedContentTypes[] = 'tt_content:list_type:' . $pluginType;
+            }
+        }
+
+        if ($allowedContentTypes) {
+            $group['explicit_allowdeny'] .= ',' . implode(',', $allowedContentTypes);
+        }
+
         $languages = $permissionSet->getAllowedLanguages();
         if ($languages) {
             $group['allowed_languages'] .= ',' . implode(',', $this->expandLanguageInstruction($languages));
