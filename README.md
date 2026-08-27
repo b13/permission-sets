@@ -56,6 +56,7 @@ resources:
   tt_content:
     fields: "*"
     types: ["textpic"]
+    plugins: ["example_details"]
 ```
 
 Special options:
