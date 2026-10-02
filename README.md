@@ -116,6 +116,14 @@ files:
   - recursiveDeleteFolder
 ```
 
+### Filemount Permissions
+
+```
+filemounts:
+  - 'data'
+  - 'images'
+```
+
 ### Sites
 
 ```
@@ -125,6 +133,14 @@ sites:
   - landingpage1
   # Grant permission to a specific page within the installation
   - 13
+```
+
+### Category Mounts
+
+```
+categories:
+  - category1
+  - category2
 ```
 
 ### UserTsConfig
